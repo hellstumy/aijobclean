@@ -1,0 +1,173 @@
+{% extends "base.html" %} {% block title %}Agent — AI Job Assistant{% endblock
+%} {% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h1 class="page-title">🤖 AI Agent Control Center</h1>
+    <p class="page-subtitle">
+      Orchestration interface for Google Antigravity Skills & Pipelines
+    </p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-success">● Agent Engine Online</span>
+  </div>
+</div>
+
+<!-- Diagnostics & Status Grid -->
+<div class="diagnostics-grid">
+  <div class="diag-card">
+    <div class="diag-header">
+      <span class="diag-icon">⚡</span>
+      <span class="diag-title">Agent Readiness</span>
+    </div>
+    <div class="diag-val highlight-green">{{ diagnostics.readiness }}</div>
+    <p class="diag-desc">
+      Python {{ diagnostics.python_version }} • Core workflows ready
+    </p>
+  </div>
+
+  <div class="diag-card">
+    <div class="diag-header">
+      <span class="diag-icon">🌐</span>
+      <span class="diag-title">Search Engine Mode</span>
+    </div>
+    <div class="diag-val">{{ diagnostics.bun_mode }}</div>
+    <p class="diag-desc">
+      {% if diagnostics.bun_available %}CLI search binaries active{% else %}Web
+      search fallback active{% endif %}
+    </p>
+  </div>
+
+  <div class="diag-card">
+    <div class="diag-header">
+      <span class="diag-icon">📄</span>
+      <span class="diag-title">PDF Toolchain</span>
+    </div>
+    <div class="diag-val">{{ diagnostics.latex_mode }}</div>
+    <p class="diag-desc">
+      {% if diagnostics.latex_available %}TeX Live available{% else %}Pure text
+      ATS-ready drafts{% endif %}
+    </p>
+  </div>
+
+  <div class="diag-card">
+    <div class="diag-header">
+      <span class="diag-icon">📊</span>
+      <span class="diag-title">State Cache</span>
+    </div>
+    <div class="diag-val">{{ diagnostics.seen_jobs_count }} Jobs in Cache</div>
+    <p class="diag-desc">Deduplication active in <code>seen_jobs.json</code></p>
+  </div>
+</div>
+
+<!-- Interactive Command Console -->
+<div class="card terminal-card">
+  <div class="card-header">
+    <div class="terminal-header-title">
+      <span class="terminal-dot red"></span>
+      <span class="terminal-dot yellow"></span>
+      <span class="terminal-dot green"></span>
+      <span class="terminal-title">Agent Command Interface</span>
+    </div>
+    <span class="card-hint">Dispatches to existing workflows</span>
+  </div>
+  <div class="terminal-body" id="terminalOutput">
+    <div class="terminal-line system">
+      ⚡ Google Antigravity Agent runtime connected. Safe dry-run mode active.
+    </div>
+    <div class="terminal-line system">
+      Type a command or click a quick action below:
+    </div>
+  </div>
+  <div class="terminal-quick-actions">
+    <button
+      class="quick-btn"
+      onclick="sendQuickCommand('Найди новые вакансии')"
+    >
+      🔍 Найди новые вакансии
+    </button>
+    <button class="quick-btn" onclick="sendQuickCommand('Статус агента')">
+      📊 Статус пайплайна
+    </button>
+    <button class="quick-btn" onclick="sendQuickCommand('Покажи профиль')">
+      👤 Сводка профиля
+    </button>
+    <button
+      class="quick-btn"
+      onclick="sendQuickCommand('Подготовь отклик для MasterBorn')"
+    >
+      📝 Dry-run: MasterBorn
+    </button>
+    <button
+      class="quick-btn"
+      onclick="sendQuickCommand('Подготовь отклик для EndySoft')"
+    >
+      📝 Dry-run: EndySoft
+    </button>
+  </div>
+  <div class="terminal-input-bar">
+    <span class="terminal-prompt">&gt;</span>
+    <input
+      type="text"
+      id="terminalInput"
+      placeholder="Enter command for agent (e.g. 'Найди новые вакансии')..."
+      onkeypress="if (event.key === 'Enter') dispatchCommand();"
+    />
+    <button class="btn btn-primary btn-sm" onclick="dispatchCommand()">
+      Send
+    </button>
+  </div>
+</div>
+
+<!-- Installed Skills & Workflows -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Installed Agent Skills</h3>
+    <span class="card-hint"
+      >Discovered from <code>.agents/skills/*/SKILL.md</code></span
+    >
+  </div>
+  <div class="skills-directory">
+    {% for skill in skills %}
+    <div class="skill-item">
+      <div class="skill-header">
+        <span class="skill-name">/{{ skill.name }}</span>
+        <span
+          class="badge {% if skill.category == 'Core Workflow' %}badge-primary{% else %}badge-subtle{% endif %}"
+          >{{ skill.category }}</span
+        >
+      </div>
+      <p class="skill-desc">{{ skill.description }}</p>
+      <span class="skill-path"><code>{{ skill.file }}</code></span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Recent Actions Log -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Recent Activity History</h3>
+    <span class="card-hint">Local runtime action stream</span>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width: 150px">Timestamp</th>
+          <th style="width: 180px">Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="actionLogBody">
+        {% for log in logs %}
+        <tr>
+          <td><code>{{ log.timestamp }}</code></td>
+          <td><strong>{{ log.action }}</strong></td>
+          <td>{{ log.details }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

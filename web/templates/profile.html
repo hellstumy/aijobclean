@@ -1,0 +1,257 @@
+{% extends "base.html" %} {% block title %}My Profile — AI Job Assistant{%
+endblock %} {% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h1 class="page-title">👤 Candidate Profile</h1>
+    <p class="page-subtitle">
+      Canonical Source of Truth: <code>{{ profile.source_file }}</code>
+    </p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-success">✓ Single Source of Truth Active</span>
+  </div>
+</div>
+
+<div class="profile-layout">
+  <!-- Left Column: Structured Editable Profile -->
+  <div class="profile-main">
+    <!-- Identity Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Identity & Contact Information</h3>
+        <span class="card-hint"
+          >Editable • Writes to 01-candidate-profile.md</span
+        >
+      </div>
+      <form
+        id="identityForm"
+        method="POST"
+        action="{{ url_for('save_profile') }}"
+      >
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value="{{ profile.identity.name or '' }}"
+              placeholder="e.g. Alex Kowalski"
+            />
+          </div>
+          <div class="form-group">
+            <label for="location">Location / Base</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value="{{ profile.identity.location or '' }}"
+              placeholder="e.g. Katowice / Silesia, Poland"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value="{{ profile.identity.email or '' }}"
+              placeholder="e.g. alex@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input
+              type="text"
+              id="phone"
+              name="phone"
+              value="{{ profile.identity.phone or '' }}"
+              placeholder="e.g. +48 500 000 000"
+            />
+          </div>
+          <div class="form-group">
+            <label for="linkedin">LinkedIn URL</label>
+            <input
+              type="text"
+              id="linkedin"
+              name="linkedin"
+              value="{{ profile.identity.linkedin or '' }}"
+              placeholder="https://linkedin.com/in/username"
+            />
+          </div>
+          <div class="form-group">
+            <label for="portfolio">Portfolio / Personal Website</label>
+            <input
+              type="text"
+              id="portfolio"
+              name="portfolio"
+              value="{{ profile.identity.portfolio or '' }}"
+              placeholder="https://example.com/portfolio"
+            />
+          </div>
+          <div class="form-group">
+            <label for="github">GitHub URL</label>
+            <input
+              type="text"
+              id="github"
+              name="github"
+              value="{{ profile.identity.github or '' }}"
+              placeholder="https://github.com/username"
+            />
+          </div>
+          <div class="form-group">
+            <label for="status">Employment Status</label>
+            <input
+              type="text"
+              id="status"
+              name="status"
+              value="{{ profile.identity.status or '' }}"
+              placeholder="e.g. Open to opportunities (Junior / Entry-level)"
+            />
+          </div>
+          <div class="form-group">
+            <label for="constraints">Constraints / Preferences</label>
+            <input
+              type="text"
+              id="constraints"
+              name="constraints"
+              value="{{ profile.identity.constraints or '' }}"
+              placeholder="e.g. Remote or Silesia / Katowice commute"
+            />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary btn-sm">
+            💾 Save Identity to Canonical Profile
+          </button>
+          {% if saved %}
+          <span class="save-status success"
+            >✓ Saved successfully to canonical file!</span
+          >
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <!-- Languages & Language Gate Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Declared Working Languages</h3>
+        <span class="card-hint">Governs the automated Language Gate</span>
+      </div>
+      <div class="card-body">
+        <p class="section-desc">
+          An undeclared language required in a job posting triggers a strict
+          <code>FAIL</code> gate. Declared languages:
+        </p>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Language</th>
+                <th>Proficiency Level</th>
+                <th>Notes / Usage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for lang in profile.languages %}
+              <tr>
+                <td><strong>{{ lang.language }}</strong></td>
+                <td>
+                  <span class="badge badge-subtle">{{ lang.level }}</span>
+                </td>
+                <td>{{ lang.notes }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical Skills Card -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Technical Competencies</h3>
+        <span class="card-hint">Grounded in canonical profile & projects</span>
+      </div>
+      <div class="card-body">
+        <div class="skills-block">
+          <h4>Core Languages & Frameworks:</h4>
+          <div class="tag-cloud">
+            {% for s in profile.tech_skills.programming %}
+            <span class="tag tag-tech">{{ s }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="skills-block">
+          <h4>Databases & Data:</h4>
+          <div class="tag-cloud">
+            {% for s in profile.tech_skills.databases %}
+            <span class="tag tag-db">{{ s }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="skills-block">
+          <h4>Developer Tools & Workflow:</h4>
+          <div class="tag-cloud">
+            {% for s in profile.tech_skills.tools %}
+            <span class="tag tag-tool">{{ s }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Preferences & Markdown Inspector -->
+  <div class="profile-side">
+    <!-- Target Preferences -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Job Search Target</h3>
+      </div>
+      <div class="card-body">
+        <div class="pref-item">
+          <span class="pref-label">Preferred Roles:</span>
+          <ul class="bullet-list">
+            {% for r in profile.preferred_roles %}
+            <li>{{ r }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="pref-item">
+          <span class="pref-label">Locations:</span>
+          <ul class="bullet-list">
+            {% for loc in profile.preferred_locations %}
+            <li>{{ loc }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="pref-item">
+          <span class="pref-label">Remote Preference:</span>
+          <p class="pref-val">{{ profile.remote_preference }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Markdown Inspector -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Canonical Markdown File</h3>
+        <button class="btn btn-outline btn-xs" onclick="toggleRawView()">
+          Toggle View
+        </button>
+      </div>
+      <div class="card-body" id="rawMarkdownContainer" style="display: none">
+        <p class="section-desc">
+          Live contents of <code>{{ profile.source_file }}</code>:
+        </p>
+        <textarea class="raw-markdown-area" readonly>
+{{ profile.raw_markdown_01 }}</textarea
+        >
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %} {% block title %}Settings — AI Job Assistant{%
+endblock %} {% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h1 class="page-title">⚙️ Agent & Search Settings</h1>
+    <p class="page-subtitle">
+      Parameters derived from <code>{{ settings.queries_source }}</code> and
+      <code>{{ settings.evaluation_source }}</code>
+    </p>
+  </div>
+  <div class="header-actions">
+    <span class="badge badge-subtle">Unified Thin-Pointer Configuration</span>
+  </div>
+</div>
+
+<div class="settings-grid">
+  <!-- Search Query Priorities -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Target Roles & Priorities</h3>
+      <span class="card-hint">Governs query generation in scrape workflow</span>
+    </div>
+    <div class="card-body">
+      <div class="settings-section">
+        <h4>Target Roles:</h4>
+        <div class="tag-cloud">
+          {% for role in settings.target_roles %}
+          <span class="tag tag-tech">{{ role }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Primary Technology Keywords:</h4>
+        <div class="tag-cloud">
+          {% for tech in settings.target_stack %}
+          <span class="tag tag-db">{{ tech }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Geographic Scope & Tiers:</h4>
+        <ul class="bullet-list">
+          {% for loc in settings.locations %}
+          <li>
+            <strong>{{ loc.name }}</strong> —
+            <span class="badge badge-subtle">{{ loc.tier }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scoring Dimension Weights -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Evaluation Dimensions & Weights</h3>
+      <span class="card-hint">From 04-job-evaluation.md</span>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Weight</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dim in settings.scoring_weights %}
+            <tr>
+              <td><strong>{{ dim.dimension }}</strong></td>
+              <td><span class="badge badge-primary">{{ dim.weight }}</span></td>
+              <td>{{ dim.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <h4 style="margin-top: 20px">Fit Rating Bands & Policy:</h4>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Verdict Band</th>
+              <th>Score Range</th>
+              <th>Framework Action Policy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for th in settings.thresholds %}
+            <tr>
+              <td><strong>{{ th.band }}</strong></td>
+              <td><code>{{ th.range }}</code></td>
+              <td>{{ th.policy }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Safety & Boundaries -->
+  <div class="card full-width">
+    <div class="card-header">
+      <h3 class="card-title">Safety Boundaries & Approval Policies</h3>
+      <span class="card-hint">Hardcoded safety guardrails</span>
+    </div>
+    <div class="card-body">
+      <div class="safety-grid">
+        {% for pol in settings.safety_policies %}
+        <div class="safety-item">
+          <div class="safety-header">
+            <span class="safety-name">{{ pol.name }}</span>
+            <span class="badge badge-success">{{ pol.value }}</span>
+          </div>
+          <p class="safety-desc">{{ pol.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

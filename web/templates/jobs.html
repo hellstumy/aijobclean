@@ -1,0 +1,193 @@
+{% extends "base.html" %} {% block title %}Jobs — AI Job Assistant{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h1 class="page-title">💼 Vacancy Pipeline</h1>
+    <p class="page-subtitle">
+      Ranked vacancies from <code>seen_jobs.json</code> evaluated against
+      <code>04-job-evaluation.md</code>
+    </p>
+  </div>
+  <div class="header-actions">
+    <button
+      id="findJobsBtn"
+      class="btn btn-primary"
+      onclick="triggerJobSearch()"
+    >
+      <span class="btn-icon">🔍</span> Find new jobs
+    </button>
+  </div>
+</div>
+
+<!-- Summary Metrics Bar -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-val">{{ summary.total }}</div>
+    <div class="metric-lbl">Total Discovered</div>
+  </div>
+  <div class="metric-card highlight-green">
+    <div class="metric-val">{{ summary.strong_fit }}</div>
+    <div class="metric-lbl">Strong Fit (≥75)</div>
+  </div>
+  <div class="metric-card highlight-blue">
+    <div class="metric-val">{{ summary.good_fit }}</div>
+    <div class="metric-lbl">Good Fit (60–74)</div>
+  </div>
+  <div class="metric-card highlight-red">
+    <div class="metric-val">{{ summary.vetoed }}</div>
+    <div class="metric-lbl">Gate Vetoed (FAIL)</div>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="filter-bar">
+  <div class="search-input-wrap">
+    <span class="search-icon">🔎</span>
+    <input
+      type="text"
+      id="jobSearchInput"
+      placeholder="Filter by company, role, location..."
+      onkeyup="filterJobs()"
+    />
+  </div>
+  <div class="filter-dropdowns">
+    <select id="verdictFilter" onchange="filterJobs()">
+      <option value="all">All Verdicts</option>
+      <option value="Strong Fit">Strong Fit</option>
+      <option value="Good Fit">Good Fit</option>
+      <option value="Moderate Fit">Moderate Fit</option>
+      <option value="FAIL">Language Gate Vetoed</option>
+    </select>
+  </div>
+</div>
+
+<!-- Vacancies Grid -->
+<div class="jobs-grid" id="jobsContainer">
+  {% for job in jobs %}
+  <div
+    class="job-card {% if job.language_gate == 'FAIL' %}card-vetoed{% endif %}"
+    data-verdict="{{ job.verdict }}"
+    data-gate="{{ job.language_gate }}"
+    data-text="{{ job.company }} {{ job.title }} {{ job.location }}"
+  >
+    <div class="job-card-header">
+      <div class="job-company-block">
+        <span class="job-company">{{ job.company }}</span>
+        <h3 class="job-title">{{ job.title }}</h3>
+      </div>
+      <div class="job-score-block">
+        {% if job.language_gate == 'FAIL' %}
+        <span class="score-badge badge-veto" title="Vetoed by Language Gate"
+          >FAIL</span
+        >
+        {% else %}
+        <span
+          class="score-badge {% if job.score >= 75 %}score-strong{% elif job.score >= 60 %}score-good{% else %}score-mod{% endif %}"
+        >
+          {{ job.score }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="job-meta">
+      <span class="meta-tag meta-location">📍 {{ job.location }}</span>
+      <span
+        class="meta-tag meta-verdict {% if job.language_gate == 'FAIL' %}tag-veto{% elif job.verdict == 'Strong Fit' %}tag-strong{% elif job.verdict == 'Good Fit' %}tag-good{% else %}tag-mod{% endif %}"
+      >
+        {% if job.language_gate == 'FAIL' %}Language Gate Veto{% else %}{{
+        job.verdict }}{% endif %}
+      </span>
+      {% if job.status == 'ranked' %}
+      <span class="meta-tag tag-status">✓ Ranked</span>
+      {% endif %}
+    </div>
+
+    {% if job.language_note %}
+    <div class="alert alert-warning">
+      ⚠️ <strong>Gate Reason:</strong> {{ job.language_note }}
+    </div>
+    {% endif %} {% if job.strengths %}
+    <div class="job-section">
+      <span class="section-label">Why it matches (Strengths):</span>
+      <ul class="bullet-list strengths-list">
+        {% for item in job.strengths %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %} {% if job.gaps %}
+    <div class="job-section">
+      <span class="section-label">Gaps to address:</span>
+      <ul class="bullet-list gaps-list">
+        {% for item in job.gaps %}
+        <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="job-card-footer">
+      <a
+        href="{{ job.url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-secondary btn-sm"
+      >
+        <span>🔗</span> Open Vacancy
+      </a>
+      {% if job.language_gate != 'FAIL' %}
+      <button
+        class="btn btn-outline btn-sm"
+        onclick="openApplyDryrun('{{ job.key }}')"
+      >
+        <span>📝</span> Prepare application
+      </button>
+      {% else %}
+      <button
+        class="btn btn-disabled btn-sm"
+        disabled
+        title="Cannot prepare application for gate-vetoed job"
+      >
+        <span>🚫</span> Vetoed
+      </button>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>No vacancies found in <code>job_scraper/seen_jobs.json</code>.</p>
+    <button class="btn btn-primary" onclick="triggerJobSearch()">
+      Run Search
+    </button>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Application Dry-Run Modal -->
+<div id="applyModal" class="modal-backdrop" style="display: none">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <div>
+        <span class="badge badge-subtle">Safe Dry-Run Mode</span>
+        <h2 id="modalCompanyTitle" class="modal-title">Application Draft</h2>
+      </div>
+      <button class="modal-close-btn" onclick="closeApplyModal()">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <div class="loading-spinner">Generating tailored draft...</div>
+    </div>
+    <div class="modal-footer">
+      <span class="footer-note"
+        >🔒 Zero Fabrication: strictly grounded in candidate profile. No emails
+        or forms sent.</span
+      >
+      <button class="btn btn-secondary" onclick="closeApplyModal()">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
