@@ -91,13 +91,11 @@ Write-Host "[5/5] Запуск мастера настройки профиля.
 Write-Host ""
 & $venvPy setup_wizard.py
 
-# 6. Start the Web UI
+# 6. Completion
 Write-Host ""
-Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  ✨ Запуск Web UI интерфейса..." -ForegroundColor Cyan
-Write-Host "  Откройте браузер по адресу: http://localhost:5000" -ForegroundColor Green
-Write-Host "  (Для остановки нажмите Ctrl+C)" -ForegroundColor Gray
-Write-Host "=================================================================" -ForegroundColor Cyan
+Write-Host "=================================================================" -ForegroundColor Green
+Write-Host "  🎉 Установка и настройка профиля успешно завершены!" -ForegroundColor Green
+Write-Host "  Проект готов к работе с AI-агентом (Google Antigravity, Claude Code, Cursor)." -ForegroundColor White
+Write-Host "  Основные команды: /scrape, /rank, /apply <url>, /interview" -ForegroundColor Cyan
+Write-Host "=================================================================" -ForegroundColor Green
 Write-Host ""
-
-& $venvPy app.py

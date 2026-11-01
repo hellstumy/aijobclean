@@ -528,8 +528,12 @@ def run_wizard():
     print(f"  - .claude/skills/job-application-assistant/04-job-evaluation.md")
     print(f"  - .claude/skills/job-scraper/search-queries.md")
     print(f"  - cv/main_example.tex")
-    print("\nТеперь вы можете запускать Web UI интерфейс:")
-    print("  python app.py")
+    print("\nТеперь проект готов к работе!")
+    print("Запустите AI-агента в этой папке и используйте команды:")
+    print("  /scrape             — поиск новых вакансий")
+    print("  /rank               — оценка соответствия вакансий")
+    print("  /apply <url>        — адаптация резюме и сопроводительного письма")
+    print("  /interview <фирма>  — подготовка к собеседованию")
     print("=" * 65 + "\n")
 
 
